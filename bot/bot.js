@@ -44,8 +44,6 @@ function processQueue() {
   isPlaying = true;
   const text    = queue.shift();
   const tmpFile = path.join(os.tmpdir(), `vb_${Date.now()}.wav`);
-
-  // Windows PowerShell built-in TTS — no extra install needed
   const safe = text.replace(/'/g, "''");
   const cmd  = `powershell -Command "Add-Type -AssemblyName System.Speech; $s = New-Object System.Speech.Synthesis.SpeechSynthesizer; $s.SetOutputToWaveFile('${tmpFile}'); $s.Speak('${safe}'); $s.Dispose()"`;
 
@@ -73,11 +71,10 @@ function processQueue() {
   });
 }
 
-// ── Discord events ───────────────────────────────────────
 client.once('ready', () => {
-  console.log(`✓ Bot online as ${client.user.tag}`);
-  console.log(`✓ HTTP server listening on http://localhost:${PORT}`);
-  console.log(`  Join a voice channel and type !join in any channel I can see`);
+  console.log(`Bot online as ${client.user.tag}`);
+  console.log(`HTTP server listening on http://localhost:${PORT}`);
+  console.log(`Join a voice channel and type !join in any channel I can see`);
 });
 
 client.on('messageCreate', async (message) => {
@@ -93,18 +90,15 @@ client.on('messageCreate', async (message) => {
       adapterCreator: vc.guild.voiceAdapterCreator,
       selfDeaf:       false,
     });
-    message.reply(`Joined **${vc.name}** — ready. You can close this chat now.`);
   }
 
   if (message.content === '!leave') {
     const conn = currentGuildId ? getVoiceConnection(currentGuildId) : null;
     if (conn) { conn.destroy(); currentGuildId = null; }
-    message.reply('Left.');
   }
 });
 
-// ── Local HTTP server ────────────────────────────────────
-// The browser app POSTs { text: "hello" } to http://localhost:3001/speak
+
 const server = http.createServer((req, res) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
